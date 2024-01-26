@@ -1,16 +1,19 @@
 import cv2
 import mediapipe as mp
 import time
+import os
+
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 class handDetector():
-    def __init__(self, mode=False, maxHands=2, detectionCon=50, trackingCon=50):
+    def __init__(self, mode=False, maxHands=2, detectionCon=0.5, trackingCon=0.5):
         self.mode = mode
         self.maxHands = maxHands
         self.detectionCon = detectionCon
         self.trackingCon = trackingCon
         
         self.mpHands = mp.solutions.hands
-        self.hands = self.mpHands.Hands(self.mode, self.maxHands, self.detectionCon, self.trackingCon)
+        self.hands = self.mpHands.Hands(self.mode, self.maxHands, min_detection_confidence=self.detectionCon, min_tracking_confidence=self.trackingCon)
         self.mpDraw = mp.solutions.drawing_utils
 
     def findHands(self, image, draw =True):
@@ -30,6 +33,7 @@ class handDetector():
         lmList = []
         if self.results.multi_hand_landmarks:
             myHand = self.results.multi_hand_landmarks[handNo]
+            
             for id, lm in enumerate(myHand.landmark):
                 # print(id,lm)
                 h, w, c = image.shape
@@ -37,7 +41,7 @@ class handDetector():
                 # print(id, cx, cy)
                 lmList.append([id, cx, cy])
                 if draw:
-                    cv2.circle(image, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
+                    cv2.circle(image, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
 
         return lmList
 
